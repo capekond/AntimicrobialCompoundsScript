@@ -46,7 +46,7 @@ class Database(ExcelParser):
         if self.p.range:
             sql = f"SELECT timestamp FROM script_data WHERE timestamp >= '{self.p.range[0]}' and timestamp <= '{self.p.range[1]}' GROUP BY timestamp"
             cf = self.db_execute(sql)
-            if cf.fetchall() == []:
+            if not cf.fetchall():
                 rng = " - ".join(self.p.range)
                 self.log.error(f" No records in range {rng} ")
                 self.p.list = "Empty, no records"

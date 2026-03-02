@@ -84,8 +84,6 @@ class ExcelParser(Arguments):
             self.log.info(f" {len(valid)} valid sheets without errors: " + ", ".join(valid))
         return report_err, err, valid
 
-        self.save_file(tba, self.p.export_excel_file)
-
     def report_errors(self):
         wbi = self.open_file(openpyxl.load_workbook, self.p.import_source)
         err_data, nul, nul = self.approve_data(wbi)
@@ -93,44 +91,3 @@ class ExcelParser(Arguments):
         err_filename = f"{parts[0]}_errors.{parts[1]}"
         err_data.to_excel(err_filename)
         self.log.info(f"Errors exported to file {err_filename}. Count of errors {len(err_data)}")
-
-
-
-    def check_file(self, file_path) -> bool:
-        directory = os.path.dirname(file_path)
-        if directory:
-            if not os.path.exists(directory):
-                try:
-                    os.makedirs(directory)
-                    self.log.warning(f"New directory created: '{directory}'")
-                except Exception as e:
-                    print(f"Error creating directory '{directory}': {e}")
-                    exit(0)
-        return os.path.exists(file_path)
-
-    # def append_raw_data(self, wbi: openpyxl.workbook.workbook.Workbook ) -> DataFrame | None:
-    #     raw_data = self.get_raw_data(wbi)
-    #     if not self.check_file(self.p.raw_data):
-    #         self.save_file(raw_data.to_excel if self.p.ext == self.EXCEL_EXTENSION else raw_data.to_csv, self.p.export_raw_file)
-    #         try:
-    #             if self.p.ext == self.EXCEL_EXTENSION:
-    #                 raw_data.to_excel(self.p.raw_data)
-    #             else:
-    #                 raw_data.to_csv(self.p.raw_data)
-    #             return raw_data
-    #         except Exception as e:
-    #             self.log.warning(f"Error saving data to new file '{self.p.raw_data}': {e}")
-    #             exit(1)
-    #     else:
-    #         #todo append data to existing scv/ excel file
-    #         try:
-    #             if self.p.ext == self.EXCEL_EXTENSION:
-    #                 ws = wbi.active
-    #                 ws.append(raw_data.itertuples(index=False))
-    #                 wbi.save(filename=self.p.raw_data)
-    #             else:
-    #                 pass
-    #
-    #         except Exception as e:
-    #             self.log.warning(f"Error adding data to file '{self.p.raw_data}': {e}")
-    #             exit(1)

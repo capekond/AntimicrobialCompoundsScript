@@ -90,13 +90,6 @@ class Arguments:
             self.log.info("Script terminated by user.")
             exit(0)
 
-    def save_file(self, save_function, file_path: str):
-        try:
-            save_function(file_path)
-        except Exception as e:
-            self.log.warning(f"Error saving file to '{file_path}': {e}")
-            exit(1)
-
     def open_file(self, open_function, file_path: str):
         try:
             wbi = open_function(file_path)

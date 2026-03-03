@@ -1,11 +1,9 @@
 import openpyxl
 import pandas
 from openpyxl.styles import Alignment, Font
-
-from src.bin.database import Database
 import pandas as pd
 from sqlalchemy import create_engine
-
+from src.bin.database import Database
 
 class ExcelInOut(Database):
 

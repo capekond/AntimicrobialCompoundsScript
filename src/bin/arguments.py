@@ -1,12 +1,8 @@
 import argparse
 import datetime
 import sys
-
-import openpyxl
-from openpyxl.utils.exceptions import InvalidFileException
 from tabulate import tabulate
 import logging
-
 
 def log_for_level(self, message, *args, **kwargs):
     if self.isEnabledFor(45):
@@ -20,9 +16,9 @@ class Arguments:
     def __init__(self):
         ts = int((datetime.datetime.now()).timestamp())
         self.DATABASE = "data.db"
-        self.TYPES_ESSAY = ["MBC", "MIC"]
         self.SHOW_LOG_LEVEL = 45
         self.p = self.get_args()
+        self.ACTIVITIES = ("MIC", "MBC")
         logging.addLevelName(self.SHOW_LOG_LEVEL, 'SHOW')
         logging.basicConfig(format='%(asctime)s %(levelname)s :%(message)s', level=logging.DEBUG if self.p.verbose else self.SHOW_LOG_LEVEL)
         setattr(logging, "SHOW", self.SHOW_LOG_LEVEL)
@@ -55,8 +51,7 @@ class Arguments:
             print("Hi, no expected arguments, let try --help for beginning")
             exit(0)
         if not self.p.type_essay:
-            #todo self.TYPES_ESSAY -> self.ACTIVITIES
-            self.p.type_essay = self.TYPES_ESSAY
+            self.p.type_essay = self.ACTIVITIES
         self.log.info("List of variables:\n" + tabulate((dict(vars(self.p))).items(), headers=["Variable", "Value"],tablefmt="grid"))
         if (not self.p.no_question) and (not input("Do you like to proceed the task? [Y/n]") == "Y"):
             self.log.info("Script terminated by user.")
@@ -68,4 +63,5 @@ class Arguments:
         except (FileNotFoundError, PermissionError) as e:
             self.log.error(e)
             exit(1)
+        self.p.sheets = self.p.sheets if self.p.sheets else wbi.sheetnames
         return wbi

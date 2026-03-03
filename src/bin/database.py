@@ -1,9 +1,8 @@
 from pandas import DataFrame
 from sqlalchemy import create_engine
-from src.bin.excel_parser import ExcelParser
 from tabulate import tabulate
 import sqlite3
-
+from src.bin.excel_parser import ExcelParser
 
 class Database(ExcelParser):
     def __init__(self):

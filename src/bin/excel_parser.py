@@ -1,23 +1,15 @@
 import re
 from datetime import datetime
-from typing import Any
-
 import tabulate
 from pandas import DataFrame
 import openpyxl
 import pandas
 from src.bin.arguments import Arguments
 
-
-def is_empty_integer(v) -> bool:
-    return v is None or isinstance(v, int) or v.isdigit()
-
-
 class ExcelParser(Arguments):
     def __init__(self):
         super().__init__()
-        self.ACTIVITIES = ["MIC", "MBC", "MICb", "gentamicin"]
-        self.ITEMS = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
+        self.ITEMS = [1, 2, 3, 1, 2, 3]
         self.COLUMNS = ("sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp")
         self.COLUMNS_ERR = ("sheet", "cell", "actual value", "error_description")
         self.COLUMNS_INFO = ("sheet", "status" , "row_count", "err_count")
@@ -94,7 +86,6 @@ class ExcelParser(Arguments):
 
     def report_errors(self):
         wbi = self.open_file(openpyxl.load_workbook, self.p.import_source)
-        self.p.sheets = self.p.sheets if self.p.sheets else wbi.sheetnames
         err_data = self.approve_data(wbi)
         parts = self.p.import_source.rsplit('.', 1)
         err_filename = f"{parts[0]}_errors.{parts[1]}"

@@ -29,7 +29,6 @@ class Database(ExcelParser):
     def delete_data(self):
         ts = self.expand_range_sql()
         sql = f"DELETE FROM {self.TABLE_NAME} " + (f" WHERE timestamp  {ts};" if ts else ";")
-        print(sql)
         self.db_execute(sql)
         self.conn.commit()
         return ts

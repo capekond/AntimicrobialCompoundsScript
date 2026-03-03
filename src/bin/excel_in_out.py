@@ -26,7 +26,6 @@ class ExcelInOut(Database):
         return self.write_data(self.get_db_data(wbi))
 
     def import_backup_excel(self):
-        print(self.p.import_backup)
         df = pd.read_excel(self.p.import_backup)
         engine = create_engine(f'sqlite:///{self.DATABASE}', echo=False)
         df.to_sql(self.TABLE_NAME, con=engine, if_exists='append', index=False)
@@ -35,7 +34,6 @@ class ExcelInOut(Database):
     def export_backup_excel(self):
         ts = self.expand_range_sql()
         sql = f"SELECT row_id, sheet, code, pathogen, activity, item, item_value, timestamp FROM script_data {'WHERE timestamp' + ts + ';' if ts else ';'}"
-        print(sql)
         df = pd.read_sql_query(sql, self.conn)
         df.to_excel(self.p.export_backup, index=False, engine='openpyxl')
         return len(df)

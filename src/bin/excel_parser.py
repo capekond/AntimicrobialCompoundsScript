@@ -33,7 +33,6 @@ class ExcelParser(Arguments):
         return datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     def get_db_data(self, wbi: openpyxl.workbook.Workbook) -> pandas.DataFrame:
-        # todo add type_essay column, add timestamp
         timestamp: str = self.get_ts()
         code = ""
         activity = ""

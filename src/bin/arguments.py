@@ -23,11 +23,11 @@ class Arguments:
         ts = int((datetime.datetime.now()).timestamp())
         self.DATABASE = "data.db"
         self.TYPES_ESSAY = ["MBC", "MIC"]
+        self.SHOW_LOG_LEVEL = 45
         self.p = self.get_args()
-        logging.addLevelName(45, 'SHOW')
-        logging.basicConfig(format='%(asctime)s %(levelname)s :%(message)s',
-                            level=logging.DEBUG if self.p.verbose else 45)
-        setattr(logging, "SHOW", 45)
+        logging.addLevelName(self.SHOW_LOG_LEVEL, 'SHOW')
+        logging.basicConfig(format='%(asctime)s %(levelname)s :%(message)s', level=logging.DEBUG if self.p.verbose else self.SHOW_LOG_LEVEL)
+        setattr(logging, "SHOW", self.SHOW_LOG_LEVEL)
         setattr(logging.getLoggerClass(), 'show', log_for_level)
         setattr(logging, 'show', log_to_root)
         self.log = logging.getLogger(__name__)
@@ -67,7 +67,9 @@ class Arguments:
             print("Hi, no expected arguments, let try --help for beginning")
             exit(0)
         if not self.p.type_essay:
+            #todo self.TYPES_ESSAY -> self.ACTIVITIES
             self.p.type_essay = self.TYPES_ESSAY
+        #todo move to approve_data
         if self.p.import_source:
             try:
                 wbi = openpyxl.load_workbook(self.p.import_source)
@@ -78,12 +80,13 @@ class Arguments:
             self.p.sheets = self.p.sheets if self.p.sheets else wbi.sheetnames
             for sheet_name in self.p.sheets:
                 try:
-                    rs = wbi[str(sheet_name)].max_row
+                    # rs = wbi[str(sheet_name)].max_row
                     sheet_ok_manes.append(sheet_name)
-                    self.log.info(f"Worksheet '{sheet_name}' has {rs} rows.")
+                    # self.log.info(f"Worksheet '{sheet_name}' has {rs} rows.")
                 except KeyError:
                     self.log.info(f"Worksheet '{sheet_name}' not exists. It is excluded")
                 self.p.sheets = sheet_ok_manes
+         #todo end of moved code
         self.log.info("List of variables:\n" + tabulate((dict(vars(self.p))).items(), headers=["Variable", "Value"],
                                                         tablefmt="grid"))
         if (not self.p.no_question) and (not input("Do you like to proceed the task? [Y/n]") == "Y"):
@@ -93,10 +96,7 @@ class Arguments:
     def open_file(self, open_function, file_path: str):
         try:
             wbi = open_function(file_path)
-        except FileNotFoundError as e:
-            self.log.error(e)
-            exit(1)
-        except PermissionError as e:
+        except (FileNotFoundError, PermissionError) as e:
             self.log.error(e)
             exit(1)
         return wbi

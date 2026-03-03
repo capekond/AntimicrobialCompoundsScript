@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 from typing import Any
+
+import tabulate
 from pandas import DataFrame
 import openpyxl
 import pandas
@@ -16,8 +18,9 @@ class ExcelParser(Arguments):
         super().__init__()
         self.ACTIVITIES = ["MIC", "MBC", "MICb", "gentamicin"]
         self.ITEMS = [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
-        self.COLUMNS = ["sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp"]
-        self.COLUMNS_ERR = ["sheet", "cell", "actual value", "error_description"]
+        self.COLUMNS = ("sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp")
+        self.COLUMNS_ERR = ("sheet", "cell", "actual value", "error_description")
+        self.COLUMNS_INFO = ("sheet", "status" , "row_count", "err_count")
         self.ITEM_COL_OFFSET = 2
         self.CODE_REGEX = r"^\s*\d+\s*-[\s\S]{7,}$"
 
@@ -31,7 +34,7 @@ class ExcelParser(Arguments):
         activity = ""
         raw_data = pandas.DataFrame(columns=self.COLUMNS)
         self.log.info(f"There is {len(self.p.sheets)} sheet(s) selected.")
-        nul, self.p.sheets = self.approve_data(wbi)
+        self.approve_data(wbi)
         for sheet_name in self.p.sheets:
             self.log.info(f"Building data for Excel worksheet {str(sheet_name)}.")
             for row_number in range(1, wbi[str(sheet_name)].max_row):
@@ -51,33 +54,48 @@ class ExcelParser(Arguments):
                         raw_data.loc[len(raw_data)] = [str(sheet_name), row_id, code, pathogen, activity, item, item_v,timestamp]
         return raw_data
 
-    def approve_data(self, wbi) -> tuple[DataFrame, set[Any]]:
+    def approve_data(self, wbi) -> DataFrame:
+        data_info = []
         report_err = pandas.DataFrame(columns=self.COLUMNS_ERR)
+        bad_sheets = []
         for sheet_name in self.p.sheets:
-            for row_number in range(1, wbi[str(sheet_name)].max_row):
-                lead_cell = wbi[sheet_name].cell(row=row_number, column=2)
-                lead = lead_cell.value
-                if not (lead is None or isinstance(lead, int) or lead.isdigit()):
-                    report_err.loc[len(report_err)] = [str(sheet_name), f"B{row_number}", str(lead), "Integer number expected"]
-                elif not lead is None and int(lead) == 1:
-                    try:
-                        raw_code = str(lead_cell.offset(row=-3, column=2).value)
-                        if  raw_code is None or not (re.match(self.CODE_REGEX, raw_code)):
-                            report_err.loc[len(report_err)] = [str(sheet_name), f"D{row_number - 3}", str(raw_code), "The format of raw code could be '# - code'"]
-                    except ValueError as e:
-                        report_err.loc[len(report_err)] = [str(sheet_name), f"B{row_number}", str(lead), f"Wrong position of leading '1' {e}"]
-        if len(report_err) > 0:
-            valid = set(self.p.sheets) - set(report_err['sheet'])
-            self.log.error(f" {len(set(report_err['sheet']))} sheets with errors:" + ",".join(set(report_err['sheet'])))
-            self.log.info(f" {len(valid)} valid sheets without errors: " + ", ".join(valid))
-        else:
-            valid = self.p.sheets
-            self.log.info(f"All sheets without errors: {valid} ")
-        return report_err, valid
+            if sheet_name in wbi.sheetnames:
+                err_count = 0
+                row_count = wbi[str(sheet_name)].max_row
+                for row_number in range(1, row_count):
+                    lead_cell = wbi[sheet_name].cell(row=row_number, column=2)
+                    lead = lead_cell.value
+                    if not (lead is None or isinstance(lead, int) or lead.isdigit()):
+                        report_err.loc[len(report_err)] = [str(sheet_name), f"B{row_number}", str(lead), "Integer number expected"]
+                        err_count += 1
+                    elif not lead is None and int(lead) == 1:
+                        try:
+                            raw_code = str(lead_cell.offset(row=-3, column=2).value)
+                            if  raw_code is None or not (re.match(self.CODE_REGEX, raw_code)):
+                                report_err.loc[len(report_err)] = [str(sheet_name), f"D{row_number - 3}", str(raw_code), "The format of raw code could be '# - code'"]
+                                err_count += 1
+                        except ValueError as e:
+                            report_err.loc[len(report_err)] = [str(sheet_name), f"B{row_number}", str(lead), f"Wrong position of leading '1' {e}"]
+                            err_count += 1
+                if err_count > 0 :
+                    bad_sheets.append(sheet_name)
+                    status = "Excluded: data error"
+                else:
+                    status = "Correct"
+            else:
+                bad_sheets.append(sheet_name)
+                status = "Excluded: not existing name"
+                row_count = "Not available"
+                err_count = "Not available"
+            data_info.append([sheet_name, status, row_count, err_count])
+        self.p.sheets = set(self.p.sheets) - set(bad_sheets)
+        self.log.info(f"Analysis of {self.p.import_source} file:\n" + tabulate.tabulate(data_info, headers=self.COLUMNS_INFO, tablefmt="grid"))
+        return report_err
 
     def report_errors(self):
         wbi = self.open_file(openpyxl.load_workbook, self.p.import_source)
-        err_data, nul = self.approve_data(wbi)
+        self.p.sheets = self.p.sheets if self.p.sheets else wbi.sheetnames
+        err_data = self.approve_data(wbi)
         parts = self.p.import_source.rsplit('.', 1)
         err_filename = f"{parts[0]}_errors.{parts[1]}"
         err_data.to_excel(err_filename)

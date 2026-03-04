@@ -1,9 +1,8 @@
 from pandas import DataFrame
 from sqlalchemy import create_engine
-from src.bin.excel_parser import ExcelParser
 from tabulate import tabulate
 import sqlite3
-
+from src.bin.excel_parser import ExcelParser
 
 class Database(ExcelParser):
     def __init__(self):
@@ -29,7 +28,6 @@ class Database(ExcelParser):
     def delete_data(self):
         ts = self.expand_range_sql()
         sql = f"DELETE FROM {self.TABLE_NAME} " + (f" WHERE timestamp  {ts};" if ts else ";")
-        print(sql)
         self.db_execute(sql)
         self.conn.commit()
         return ts
@@ -46,7 +44,7 @@ class Database(ExcelParser):
         if self.p.range:
             sql = f"SELECT timestamp FROM script_data WHERE timestamp >= '{self.p.range[0]}' and timestamp <= '{self.p.range[1]}' GROUP BY timestamp"
             cf = self.db_execute(sql)
-            if cf.fetchall() == []:
+            if not cf.fetchall():
                 rng = " - ".join(self.p.range)
                 self.log.error(f" No records in range {rng} ")
                 self.p.list = "Empty, no records"

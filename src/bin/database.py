@@ -7,7 +7,6 @@ from src.bin.excel_parser import ExcelParser
 class Database(ExcelParser):
     def __init__(self):
         super().__init__()
-        self.TABLE_NAME = 'script_data'
         self.conn = sqlite3.connect(self.DATABASE)
 
     def db_execute(self, sql):

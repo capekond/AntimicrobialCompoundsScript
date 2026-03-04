@@ -15,10 +15,17 @@ class Arguments:
 
     def __init__(self):
         ts = int((datetime.datetime.now()).timestamp())
-        self.DATABASE = "data.db"
         self.SHOW_LOG_LEVEL = 45
-        self.p = self.get_args()
+        self.DATABASE = "data.db"
+        self.TABLE_NAME = 'script_data'
         self.ACTIVITIES = ("MIC", "MBC")
+        self.ITEMS = (1, 2, 3, 1, 2, 3)
+        self.COLUMNS = ("sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp")
+        self.COLUMNS_ERR = ("sheet", "cell", "actual value", "error_description")
+        self.COLUMNS_INFO = ("sheet", "status" , "row_count", "err_count")
+        self.ITEM_COL_OFFSET = 2
+        self.CODE_REGEX = r"^\s*\d+\s*-[\s\S]{7,}$"
+        self.p = self.get_args()
         logging.addLevelName(self.SHOW_LOG_LEVEL, 'SHOW')
         logging.basicConfig(format='%(asctime)s %(levelname)s :%(message)s', level=logging.DEBUG if self.p.verbose else self.SHOW_LOG_LEVEL)
         setattr(logging, "SHOW", self.SHOW_LOG_LEVEL)

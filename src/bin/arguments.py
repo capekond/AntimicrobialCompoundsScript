@@ -50,7 +50,7 @@ class Arguments:
         imp.add_argument("-e", "--export_final", help=f"Export to final excel file.")
         imp.add_argument("-t", "--type_essay", nargs='+', help="MIC and / or MBC, sheets in final export file ")
         db.add_argument("-d", "--delete", action='store_true', help="Delete records with timestamps by range or list")
-        db.add_argument("-j", "--join", action='store_true', help="Join records with timestamps as the list or range (if -r is present). Actual timestamp as is used for joined data")
+        db.add_argument("-j", "--join", action='store_true', help="Join records with timestamps as the list or range. Actual timestamp as is used for joined data")
         return parser.parse_args()
 
     def check_args(self):

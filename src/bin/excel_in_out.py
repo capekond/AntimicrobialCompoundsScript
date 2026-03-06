@@ -1,3 +1,5 @@
+import logging
+
 import openpyxl
 import pandas
 from openpyxl.styles import Alignment, Font
@@ -40,6 +42,7 @@ class ExcelInOut(Database):
         with pd.ExcelWriter(self.p.export_final, engine='openpyxl') as writer:
             for type_essay in self.p.type_essay:
                 sql = self.SQL_FINAL.format(activity=type_essay)
+                logging.debug("Executing SQL: " + sql)
                 df = pandas.read_sql_query(sql, self.conn)
                 pivot_df = df.pivot_table(values='item_value', index=['code'], columns=['pathogen'], aggfunc="first")
                 pivot_df.to_excel(writer, sheet_name=type_essay, index=True)

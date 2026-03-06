@@ -27,7 +27,7 @@ class Main(ExcelInOut):
                 self.log.info(f" Backup database data to {self.p.export_backup} Row count is {info}")
             if self.p.export_final:
                 self.get_final_content()
-                self.log.info(f" Scope {self.p.list} exported to final data {self.p.export_final}")
+                self.log.info(f" Scope {self.p.list if self.p.list else "ALL"} exported to final data {self.p.export_final}")
         self.conn.close()
 
 if __name__ == "__main__":

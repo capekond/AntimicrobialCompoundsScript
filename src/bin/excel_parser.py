@@ -9,12 +9,6 @@ from src.bin.arguments import Arguments
 class ExcelParser(Arguments):
     def __init__(self):
         super().__init__()
-        self.ITEMS = [1, 2, 3, 1, 2, 3]
-        self.COLUMNS = ("sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp")
-        self.COLUMNS_ERR = ("sheet", "cell", "actual value", "error_description")
-        self.COLUMNS_INFO = ("sheet", "status" , "row_count", "err_count")
-        self.ITEM_COL_OFFSET = 2
-        self.CODE_REGEX = r"^\s*\d+\s*-[\s\S]{7,}$"
 
     @staticmethod
     def get_ts():

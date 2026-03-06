@@ -7,11 +7,11 @@ from src.bin.excel_parser import ExcelParser
 class Database(ExcelParser):
     def __init__(self):
         super().__init__()
-        self.TABLE_NAME = 'script_data'
         self.conn = sqlite3.connect(self.DATABASE)
 
     def db_execute(self, sql):
         cursor = self.conn.cursor()
+        self.log.debug("Executing SQL: " + sql)
         cursor.execute(sql)
         cur = cursor
         return cur
@@ -48,6 +48,6 @@ class Database(ExcelParser):
                 rng = " - ".join(self.p.range)
                 self.log.error(f" No records in range {rng} ")
                 self.p.list = "Empty, no records"
-                return " IN ()"
+                return " IN () "
             self.p.list = [t[0] for t in cf]
         return " IN ('" + "','".join(self.p.list) + "')" if self.p.list else None

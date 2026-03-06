@@ -15,10 +15,17 @@ class Arguments:
 
     def __init__(self):
         ts = int((datetime.datetime.now()).timestamp())
-        self.DATABASE = "data.db"
         self.SHOW_LOG_LEVEL = 45
-        self.p = self.get_args()
+        self.DATABASE = "data.db"
+        self.TABLE_NAME = 'script_data'
         self.ACTIVITIES = ("MIC", "MBC")
+        self.ITEMS = (1, 2, 3, 1, 2, 3)
+        self.COLUMNS = ("sheet", "row_id", "code", "pathogen", "activity", "item", "item_value", "timestamp")
+        self.COLUMNS_ERR = ("sheet", "cell", "actual value", "error_description")
+        self.COLUMNS_INFO = ("sheet", "status" , "row_count", "err_count")
+        self.ITEM_COL_OFFSET = 2
+        self.CODE_REGEX = r"^\s*\d+\s*-[\s\S]{7,}$"
+        self.p = self.get_args()
         logging.addLevelName(self.SHOW_LOG_LEVEL, 'SHOW')
         logging.basicConfig(format='%(asctime)s %(levelname)s :%(message)s', level=logging.DEBUG if self.p.verbose else self.SHOW_LOG_LEVEL)
         setattr(logging, "SHOW", self.SHOW_LOG_LEVEL)
@@ -43,7 +50,7 @@ class Arguments:
         imp.add_argument("-e", "--export_final", help=f"Export to final excel file.")
         imp.add_argument("-t", "--type_essay", nargs='+', help="MIC and / or MBC, sheets in final export file ")
         db.add_argument("-d", "--delete", action='store_true', help="Delete records with timestamps by range or list")
-        db.add_argument("-j", "--join", action='store_true', help="Join records with timestamps as the list or range (if -r is present). Actual timestamp as is used for joined data")
+        db.add_argument("-j", "--join", action='store_true', help="Join records with timestamps as the list or range. Actual timestamp as is used for joined data")
         return parser.parse_args()
 
     def check_args(self):

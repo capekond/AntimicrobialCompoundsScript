@@ -8,6 +8,8 @@ class Database(ExcelParser):
     def __init__(self):
         super().__init__()
         self.conn = sqlite3.connect(self.DATABASE)
+    def __exit__(self):
+        self.conn.close()
 
     def db_execute(self, sql):
         cursor = self.conn.cursor()

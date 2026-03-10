@@ -57,8 +57,7 @@ class Arguments:
         if len(sys.argv) == 1:
             print("Hi, no expected arguments, let try --help for beginning")
             exit(0)
-        if not self.p.type_essay:
-            self.p.type_essay = self.ACTIVITIES
+        self.p.type_essay = self.p.type_essay or self.ACTIVITIES
         self.log.info("List of variables:\n" + tabulate((dict(vars(self.p))).items(), headers=["Variable", "Value"],tablefmt="grid"))
         if (not self.p.no_question) and (not input("Do you like to proceed the task? [Y/n]") == "Y"):
             self.log.info("Script terminated by user.")
@@ -70,5 +69,5 @@ class Arguments:
         except (FileNotFoundError, PermissionError) as e:
             self.log.error(e)
             exit(1)
-        self.p.sheets = self.p.sheets if self.p.sheets else wbi.sheetnames
+        self.p.sheets = self.p.sheets or wbi.sheetnames
         return wbi

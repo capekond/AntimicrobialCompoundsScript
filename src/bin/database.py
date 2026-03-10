@@ -8,6 +8,8 @@ class Database(ExcelParser):
     def __init__(self):
         super().__init__()
         self.conn = sqlite3.connect(self.DATABASE)
+    def __exit__(self):
+        self.conn.close()
 
     def db_execute(self, sql):
         cursor = self.conn.cursor()
@@ -30,7 +32,7 @@ class Database(ExcelParser):
         sql = f"DELETE FROM {self.TABLE_NAME} " + (f" WHERE timestamp  {ts};" if ts else ";")
         self.db_execute(sql)
         self.conn.commit()
-        return ts
+        self.log.info(" Delete records with timestamps " + (self.p.list or "ALL "))
 
     def join_data(self):
         ts_final = self.get_ts()
@@ -38,7 +40,7 @@ class Database(ExcelParser):
         sql = f"UPDATE {self.TABLE_NAME} SET timestamp = '{ts_final}' " + (f" WHERE timestamp  {ts};" if ts else ";")
         self.db_execute(sql)
         self.conn.commit()
-        return ts_final, ts
+        self.log.info(" Join records from " + (ts or "ALL ") + f"to {ts_final}")
 
     def expand_range_sql(self):
         if self.p.range:

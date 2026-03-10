@@ -23,20 +23,21 @@ class ExcelInOut(Database):
 
     def import_source(self):
         wbi = self.open_file(openpyxl.load_workbook, self.p.import_source)
-        return self.write_data(self.get_db_data(wbi))
+        info = self.write_data(self.get_db_data(wbi))
+        self.log.info(f" Update affect {info} rows in data table.")
 
     def import_backup_excel(self):
         df = pd.read_excel(self.p.import_backup)
         engine = create_engine(f'sqlite:///{self.DATABASE}', echo=False)
         df.to_sql(self.TABLE_NAME, con=engine, if_exists='append', index=False)
-        return len(df)
+        self.log.info(f" Import exported data from file {self.p.import_backup} to database data.db. Row count is {len(df)}")
 
     def export_backup_excel(self):
         ts = self.expand_range_sql()
         sql = f"SELECT row_id, sheet, code, pathogen, activity, item, item_value, timestamp FROM script_data {'WHERE timestamp' + ts + ';' if ts else ';'}"
         df = pd.read_sql_query(sql, self.conn)
         df.to_excel(self.p.export_backup, index=False, engine='openpyxl')
-        return len(df)
+        self.log.info(f" Backup database data to {self.p.export_backup} Row count is {len(df)}")
 
     def get_final_content(self):
         with pd.ExcelWriter(self.p.export_final, engine='openpyxl') as writer:
@@ -49,3 +50,4 @@ class ExcelInOut(Database):
                 for c in writer.sheets[type_essay]['A1':'AA1'][0]:
                     c.alignment = Alignment(textRotation=90)
                     c.font = Font(bold=False)
+        self.log.info(f" Scope {self.p.list or "ALL"} exported to final data {self.p.export_final}")

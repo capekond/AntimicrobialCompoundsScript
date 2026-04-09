@@ -12,11 +12,8 @@ class Database(ExcelParser):
         self.conn.close()
 
     def db_execute(self, sql):
-        cursor = self.conn.cursor()
         self.log.debug("Executing SQL: " + sql)
-        cursor.execute(sql)
-        cur = cursor
-        return cur
+        return self.conn.execute(sql)
 
     def write_data(self, df: DataFrame):
         engine = create_engine(f'sqlite:///{self.DATABASE}', echo=False)

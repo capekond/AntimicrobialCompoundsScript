@@ -1,3 +1,5 @@
+from typing import List
+
 from pandas import DataFrame
 from sqlalchemy import create_engine
 from tabulate import tabulate
@@ -14,6 +16,11 @@ class Database(ExcelParser):
     def db_execute(self, sql):
         self.log.debug("Executing SQL: " + sql)
         return self.conn.execute(sql)
+
+    def exists_type_essay(self) -> bool:
+        c = self.db_execute(f"SELECT COUNT(*) FROM {self.TABLE_NAME} WHERE activity IN ('{"','".join(self.p.type_essay)}');")
+        return c.fetchall()[0][0] != 0
+
 
     def write_data(self, df: DataFrame):
         engine = create_engine(f'sqlite:///{self.DATABASE}', echo=False)
@@ -50,3 +57,13 @@ class Database(ExcelParser):
                 return " IN () "
             self.p.list = [t[0] for t in cf]
         return " IN ('" + "','".join(self.p.list) + "')" if self.p.list else None
+
+    def check_wrong_essay(self, check_db: bool = False) -> bool:
+        self.p.type_essay = self.p.type_essay or self.ACTIVITIES
+        for ts in self.p.type_essay:
+            if not ts in self.ACTIVITIES:
+                self.log.error(f" Wrong value for type essay / activity: {ts}")
+                return False
+        if check_db:
+            return self.exists_type_essay()
+        return True

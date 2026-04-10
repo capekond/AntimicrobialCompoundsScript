@@ -40,14 +40,17 @@ class ExcelInOut(Database):
         self.log.info(f" Backup database data to {self.p.export_backup} Row count is {len(df)}")
 
     def get_final_content(self):
-        with pd.ExcelWriter(self.p.export_final, engine='openpyxl') as writer:
-            for type_essay in self.p.type_essay:
-                sql = self.SQL_FINAL.format(activity=type_essay)
-                logging.debug("Executing SQL: " + sql)
-                df = pandas.read_sql_query(sql, self.conn)
-                pivot_df = df.pivot_table(values='item_value', index=['code'], columns=['pathogen'], aggfunc="first")
-                pivot_df.to_excel(writer, sheet_name=type_essay, index=True)
-                for c in writer.sheets[type_essay]['A1':'AA1'][0]:
-                    c.alignment = Alignment(textRotation=90)
-                    c.font = Font(bold=False)
-        self.log.info(f" Scope {self.p.list or "ALL"} exported to final data {self.p.export_final}")
+        if self.check_wrong_essay(check_db=True):
+            with pd.ExcelWriter(self.p.export_final, engine='openpyxl') as writer:
+                for type_essay in self.p.type_essay:
+                    sql = self.SQL_FINAL.format(activity=type_essay)
+                    logging.debug("Executing SQL: " + sql)
+                    df = pandas.read_sql_query(sql, self.conn)
+                    pivot_df = df.pivot_table(values='item_value', index=['code'], columns=['pathogen'], aggfunc="first")
+                    pivot_df.to_excel(writer, sheet_name=type_essay, index=True)
+                    for c in writer.sheets[type_essay]['A1':'AA1'][0]:
+                        c.alignment = Alignment(textRotation=90)
+                        c.font = Font(bold=False)
+            self.log.info(f" Scope {self.p.list or "ALL"} exported to final data {self.p.export_final}")
+        else:
+            self.log.error(f"No data in database for {self.p.type_essay}")

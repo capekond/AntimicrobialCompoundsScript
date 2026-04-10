@@ -25,6 +25,7 @@ class Main(ExcelInOut):
 
     def main(self) -> None:
         self.check_args()
+        self.check_wrong_essay()
         for condition, operation in self._get_operations():
             if condition:
                     operation()
